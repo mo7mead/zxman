@@ -1,0 +1,11 @@
+# Captured request data — never publish
+/hits/
+/requests.log
+
+# Served payloads (keep the folder, ignore its contents)
+/public/*
+!/public/.gitkeep
+
+# OS / editor noise
+.DS_Store
+*.swp
