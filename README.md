@@ -8,6 +8,8 @@
 ![Dependencies](https://img.shields.io/badge/Dependencies-webrick-3FB950)
 ![Tunnel](https://img.shields.io/badge/Tunnel-cloudflared-F38020?logo=cloudflare&logoColor=white)
 
+**Repository:** <https://github.com/mo7mead/zxman>
+
 **zxman** captures every incoming HTTP request — method, path, query, headers
 and body — and serves static files from `./public`. Everything shows live on a
 256-colour dashboard, and an optional `cloudflared` tunnel gives you a public
@@ -85,7 +87,7 @@ callbacks, or handing someone a one-off public URL to hit.
 
 ```sh
 # 1. Get the code
-git clone <your-repo-url> zxman
+git clone https://github.com/mo7mead/zxman.git
 cd zxman
 
 # 2. Install dependencies
@@ -169,7 +171,7 @@ cloudflared --version
 **3. Get zxman and run it**
 
 ```sh
-git clone <your-repo-url> zxman
+git clone https://github.com/mo7mead/zxman.git
 cd zxman
 ruby server.rb                # tunnel on; or: TUNNEL=0 ruby server.rb
 ```
@@ -285,3 +287,9 @@ zxman is a debugging tool, not a hardened service. When you expose it:
   deliberately.
 - **`KILL_PORT` can terminate other processes** — it's off by default and
   opt-in for good reason.
+
+## License
+
+No formal license has been declared yet. Until a `LICENSE` file is added, all
+rights are reserved by the author. Open an issue at
+<https://github.com/mo7mead/zxman/issues> if you'd like a specific license.
