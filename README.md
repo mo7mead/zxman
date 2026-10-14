@@ -285,8 +285,3 @@ zxman is a debugging tool, not a hardened service. When you expose it:
   deliberately.
 - **`KILL_PORT` can terminate other processes** — it's off by default and
   opt-in for good reason.
-
-## License
-
-No license is set yet. Add a `LICENSE` file (e.g. MIT) before sharing publicly
-if you want others to reuse the code.
