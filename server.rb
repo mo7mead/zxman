@@ -12,10 +12,15 @@
 #  - new files       -> detected and flagged automatically
 #
 #  Needs Ruby 3.0+ and the `webrick` gem:  gem install webrick
-#  Run:  ruby server.rb        (use -h for help)
+#  Run:  zxman  or  ruby server.rb   (use -h for help)
 # ============================================================
 
-require 'webrick'
+begin
+  require 'webrick'
+rescue LoadError
+  warn "zxman: the 'webrick' gem is missing — install it with:  gem install webrick"
+  exit 1
+end
 require 'socket'
 require 'json'
 require 'time'
@@ -30,6 +35,8 @@ require 'io/console'
 # ------------------------------------------------------------
 module Config
   VERSION   = '1.0.0'
+  # How to invoke us in messages: `zxman` via bin/zxman, else the script.
+  PROG      = ENV.fetch('ZXMAN_PROG', 'ruby server.rb')
   PORT      = (ENV['PORT'] || 8000).to_i
   ROOT      = __dir__
   PUBLIC    = File.join(ROOT, 'public')
@@ -54,14 +61,27 @@ end
 module CLI
   module_function
 
+  EXAMPLES = [
+    ['',             'port 8000, tunnel on'],
+    ['TUNNEL=0 ',    'local only, no public URL'],
+    ['PORT=9000 ',   'bind port 9000'],
+    ['sudo PORT=80 ', 'bind the default HTTP port']
+  ].freeze
+
+  def examples
+    cmds = EXAMPLES.map { |env, note| ["#{env}#{Config::PROG}", note] }
+    pad  = cmds.map { |cmd, _| cmd.length }.max + 4
+    cmds.map { |cmd, note| "    #{cmd.ljust(pad)}# #{note}" }.join("\n")
+  end
+
   def help
     <<~TXT
       zxman #{Config::VERSION} — a tiny HTTP request catcher with a live
       dashboard and an optional public tunnel.
 
       USAGE
-          ruby server.rb [options]
-          [ENV=value ...] ruby server.rb
+          #{Config::PROG} [options]
+          [ENV=value ...] #{Config::PROG}
 
       OPTIONS
           -h, --help       Show this help and exit
@@ -79,10 +99,7 @@ module CLI
           <any other>      Captured → requests.log and hits/<ts>-<rand>.json
 
       EXAMPLES
-          ruby server.rb                 # port 8000, tunnel on
-          TUNNEL=0 ruby server.rb        # local only, no public URL
-          PORT=9000 ruby server.rb       # bind port 9000
-          sudo PORT=80 ruby server.rb    # bind the default HTTP port
+      #{examples}
 
       Press Ctrl+C to stop. Captured data lands in ./hits and ./requests.log.
     TXT
@@ -99,7 +116,7 @@ module CLI
       puts "zxman #{Config::VERSION}"
       exit 0
     else
-      warn "zxman: unknown option '#{argv[0]}' — try 'ruby server.rb -h'"
+      warn "zxman: unknown option '#{argv[0]}' — try '#{Config::PROG} -h'"
       exit 1
     end
   end
@@ -721,13 +738,13 @@ class App
       pids = `lsof -ti :#{Config::PORT} 2>/dev/null`.split
       if pids.empty?
         warn Ansi.paint("  ! port #{Config::PORT} is busy and no owning PID was found.", :red, :bold)
-        warn Ansi.paint("    Free it, or run with another port:  PORT=8001 ruby server.rb", :dim)
+        warn Ansi.paint("    Free it, or run with another port:  PORT=8001 #{Config::PROG}", :dim)
         exit 1
       end
 
       unless Config::KILL_PORT
         warn Ansi.paint("  ! port #{Config::PORT} is busy (PID #{pids.join(', ')}).", :red, :bold)
-        warn Ansi.paint("    Free it yourself, pick another port (PORT=8001 ruby server.rb),", :dim)
+        warn Ansi.paint("    Free it yourself, pick another port (PORT=8001 #{Config::PROG}),", :dim)
         warn Ansi.paint("    or re-run with KILL_PORT=1 to terminate the owning process.", :dim)
         exit 1
       end

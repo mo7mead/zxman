@@ -96,8 +96,11 @@ make install                      # or: bundle install
 # 3. (Optional) install cloudflared for the public tunnel
 brew install cloudflared          # macOS — see Kali section for Linux
 
-# 4. Run it
-make run                          # or, local-only: make public
+# 4. Install the `zxman` command (symlinks into ~/.local/bin)
+make link
+
+# 5. Run it — from any directory
+zxman                             # or, local-only: TUNNEL=0 zxman
 ```
 
 The dashboard appears and prints your local URLs — plus a public
@@ -114,9 +117,11 @@ Watch it appear live on the dashboard; it's also saved to `requests.log` and
 **Other ways to run:**
 
 ```sh
+make run              # start from the repo without installing the command
 make public           # run without the cloudflared tunnel (TUNNEL=0)
-./server.rb           # run the script directly (needs webrick)
-ruby server.rb -h     # show the manual (all options and env vars)
+ruby server.rb        # run the script directly (needs Ruby 3 + webrick)
+zxman -h              # show the manual (all options and env vars)
+make unlink           # remove the `zxman` command again
 make help             # list all make targets
 ```
 
@@ -213,6 +218,14 @@ curl http://localhost:8000/static/index.html
 make clean            # removes hits/ and requests.log
 ```
 
+> **macOS:** the system Ruby is 2.6, which is too old. `brew install ruby`
+> gives you a current one; the `zxman` launcher finds Homebrew's Ruby on its
+> own (or set `ZXMAN_RUBY=/path/to/ruby`). Then `gem install webrick` with it:
+> `/opt/homebrew/opt/ruby/bin/gem install webrick`.
+>
+> Captured data always lands in the repo's `hits/` and `requests.log`, wherever
+> you run `zxman` from.
+
 ## Configuration
 
 All configuration is through environment variables:
@@ -266,6 +279,7 @@ interleaves. It's one file — [`server.rb`](server.rb) — with no framework.
 
 ```
 server.rb         the whole server (single file)
+bin/zxman         launcher behind the `zxman` command (picks a Ruby 3+)
 public/           files served under /static — drop payloads here
 hits/             one JSON file per captured request   (git-ignored)
 requests.log      one JSON line per captured request   (git-ignored)

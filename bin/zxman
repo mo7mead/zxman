@@ -1,0 +1,27 @@
+#!/bin/sh
+# zxman launcher — run the request catcher as a plain `zxman` command.
+# Install it on your PATH with:  make link   (symlinks into ~/.local/bin)
+
+# Resolve the real location of this script, following symlinks.
+self=$0
+while [ -L "$self" ]; do
+  target=$(readlink "$self")
+  case $target in
+    /*) self=$target ;;
+    *)  self=$(dirname "$self")/$target ;;
+  esac
+done
+root=$(cd "$(dirname "$self")/.." && pwd)
+
+# Pick a Ruby 3.0+: $ZXMAN_RUBY, then Homebrew's keg-only ruby, then PATH.
+for ruby in "$ZXMAN_RUBY" /opt/homebrew/opt/ruby/bin/ruby /usr/local/opt/ruby/bin/ruby ruby; do
+  [ -n "$ruby" ] || continue
+  command -v "$ruby" >/dev/null 2>&1 || continue
+  if "$ruby" -e 'exit(RUBY_VERSION >= "3.0" ? 0 : 1)' 2>/dev/null; then
+    ZXMAN_PROG=zxman exec "$ruby" "$root/server.rb" "$@"
+  fi
+done
+
+echo "zxman: needs Ruby 3.0+ (found none). Install one, e.g. 'brew install ruby'," >&2
+echo "       or point ZXMAN_RUBY at a Ruby 3 binary." >&2
+exit 1
